@@ -222,6 +222,7 @@ class _QpcV4RichTextLineState extends State<QpcV4RichTextLine> {
             return;
           }
 
+          /* 
           int? bookmarkId;
           for (final b in allBookmarksList) {
             if (b.ayahId == uq) {
@@ -234,6 +235,7 @@ class _QpcV4RichTextLineState extends State<QpcV4RichTextLine> {
             BookmarksCtrl.instance.removeBookmark(bookmarkId);
             return;
           }
+          */
 
           if (widget.quranCtrl.isMultiSelectMode.value) {
             widget.quranCtrl.toggleAyahSelectionMulti(uq);

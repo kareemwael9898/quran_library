@@ -103,7 +103,8 @@ class TextScaleRichTextBuild extends StatelessWidget {
                           .toggleAyahSelection(ayahs[ayahIndex].ayahUQNumber);
                       QuranCtrl.instance.state.isShowMenu.value = false;
                     } else {
-                      final bookmarkId = allBookmarks.any((bookmark) =>
+                      /*
+                                            final bookmarkId = allBookmarks.any((bookmark) =>
                               bookmark.ayahId == ayahs[ayahIndex].ayahUQNumber)
                           ? allBookmarks
                               .firstWhere((bookmark) =>
@@ -114,28 +115,29 @@ class TextScaleRichTextBuild extends StatelessWidget {
                       if (bookmarkId != null) {
                         BookmarksCtrl.instance.removeBookmark(bookmarkId);
                       } else {
-                        // حدث التحديد (متعدد أو عادي)
-                        if (quranCtrl.isMultiSelectMode.value) {
-                          quranCtrl.toggleAyahSelectionMulti(
-                              ayahs[ayahIndex].ayahUQNumber);
-                        } else {
-                          quranCtrl.toggleAyahSelection(
-                              ayahs[ayahIndex].ayahUQNumber);
-                        }
-                        QuranCtrl.instance.state.isShowMenu.value = false;
-
-                        final themedTafsirStyle =
-                            TafsirTheme.of(context)?.style;
-                        showAyahMenuDialog(
-                          context: context,
-                          isDark: isDark,
-                          ayah: ayahs[ayahIndex],
-                          position: details.globalPosition,
-                          index: ayahIndex,
-                          pageIndex: pageIndex,
-                          externalTafsirStyle: themedTafsirStyle,
-                        );
+                      */
+                      // حدث التحديد (متعدد أو عادي)
+                      if (quranCtrl.isMultiSelectMode.value) {
+                        quranCtrl.toggleAyahSelectionMulti(
+                            ayahs[ayahIndex].ayahUQNumber);
+                      } else {
+                        quranCtrl.toggleAyahSelection(
+                            ayahs[ayahIndex].ayahUQNumber);
                       }
+                      QuranCtrl.instance.state.isShowMenu.value = false;
+
+                      final themedTafsirStyle =
+                          TafsirTheme.of(context)?.style;
+                      showAyahMenuDialog(
+                        context: context,
+                        isDark: isDark,
+                        ayah: ayahs[ayahIndex],
+                        position: details.globalPosition,
+                        index: ayahIndex,
+                        pageIndex: pageIndex,
+                        externalTafsirStyle: themedTafsirStyle,
+                      );
+                      // }
                     }
                   },
                   bookmarkList: bookmarkList,
