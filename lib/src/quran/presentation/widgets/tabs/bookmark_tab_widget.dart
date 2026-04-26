@@ -54,18 +54,19 @@ class _BookmarksTab extends StatelessWidget {
                   leading: Icon(Icons.bookmark,
                       color: groupColor,
                       size: effectiveStyle.expansionTileIconSize!),
+                  // title: Text(
+                  //   colorCode == 0xAAFFD354
+                  //       ? effectiveStyle.yellowGroupText!
+                  //       : colorCode == 0xAAF36077
+                  //           ? effectiveStyle.redGroupText!
+                  //           : effectiveStyle.greenGroupText!,
+                  //   style: QuranLibrary().cairoStyle.copyWith(
+                  //       fontSize: effectiveStyle.titleFontSize!,
+                  //       fontWeight: effectiveStyle.titleFontWeight!,
+                  //       color: effectiveStyle.textColor!),
+                  // ),
+                  initiallyExpanded: true,
                   title: Text(
-                    colorCode == 0xAAFFD354
-                        ? effectiveStyle.yellowGroupText!
-                        : colorCode == 0xAAF36077
-                            ? effectiveStyle.redGroupText!
-                            : effectiveStyle.greenGroupText!,
-                    style: QuranLibrary().cairoStyle.copyWith(
-                        fontSize: effectiveStyle.titleFontSize!,
-                        fontWeight: effectiveStyle.titleFontWeight!,
-                        color: effectiveStyle.textColor!),
-                  ),
-                  subtitle: Text(
                     'عدد: ${bookmarks.length}'.convertNumbersAccordingToLang(
                         languageCode: languageCode),
                     style: QuranLibrary().cairoStyle.copyWith(

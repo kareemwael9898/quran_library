@@ -421,7 +421,7 @@ class BookmarksTabStyle {
       // الحالة الفارغة
       emptyStateIconSize: 48.0,
       emptyStateIconColor: textColor.withValues(alpha: 0.5),
-      emptyStateText: 'لا توجد فواصل محفوظة',
+      emptyStateText: 'لا توجد علامات محفوظة',
       emptyStateTextFontSize: 14.0,
       emptyStateTextColor: textColor.withValues(alpha: 0.7),
       emptyStateIconToTextSpacing: 16.0,

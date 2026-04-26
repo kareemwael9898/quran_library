@@ -4,6 +4,7 @@ class _SearchTab extends StatefulWidget {
   final bool isDark;
   final String languageCode;
   final SearchTabStyle? style;
+
   const _SearchTab(
       {required this.isDark, required this.languageCode, this.style});
 
@@ -94,10 +95,29 @@ class _SearchTabState extends State<_SearchTab> {
                 filled: true,
                 contentPadding: s.searchContentPadding ??
                     const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                suffixIcon: Icon(
-                  s.searchSuffixIconData ?? Icons.search,
-                  color: textColor.withValues(
-                      alpha: s.searchSuffixIconAlpha ?? 0.6),
+                // suffixIcon: Icon(
+                //   s.searchSuffixIconData ?? Icons.search,
+                //   color: textColor.withValues(
+                //       alpha: s.searchSuffixIconAlpha ?? 0.6),
+                // ),
+
+                // clear button
+                suffixIcon: IconButton(
+                  icon: const Icon(
+                    Icons.cancel_outlined,
+                    color: Colors.black,
+                  ),
+                  onPressed: () {
+                    QuranCtrl.instance.searchTextController.clear();
+                    QuranCtrl.instance.searchResultAyahs.value = [];
+                    QuranCtrl.instance.searchResultSurahs.value = [];
+                    // إعادة تمكين تركيز PageView بعد إغلاق البحث على الويب
+                    if (kIsWeb) {
+                      final rl = QuranCtrl.instance.state.quranPageRLFocusNode;
+                      rl.canRequestFocus = true;
+                      rl.requestFocus();
+                    }
+                  },
                 ),
                 hintText: s.searchHintText ?? 'بحث في القرآن',
                 hintStyle: s.searchHintStyle ??
