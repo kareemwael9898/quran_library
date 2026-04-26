@@ -52,17 +52,21 @@ class AyahMenuDialog extends StatelessWidget {
       onDismiss?.call();
     }
 
-    final themed = AyahLongClickTheme.of(rootContext)?.style;
+    final themed = AyahLongClickTheme
+        .of(rootContext)
+        ?.style;
     final s = themed ??
         AyahMenuStyle.defaults(isDark: isDark, context: overlayContext);
 
     // الحصول على نمط الصوت / Get audio style
     final sAudio =
-        AyahAudioStyle.defaults(isDark: isDark, context: overlayContext);
+    AyahAudioStyle.defaults(isDark: isDark, context: overlayContext);
 
     // محاولة الحصول على نمط مدير التحميل من الثيم أولاً / Try to get download manager style from theme first
     final themedDownloadManager =
-        AyahDownloadManagerTheme.of(rootContext)?.style;
+        AyahDownloadManagerTheme
+            .of(rootContext)
+            ?.style;
     final sDownloadManager = themedDownloadManager ??
         AyahDownloadManagerStyle.defaults(
             isDark: isDark, context: overlayContext);
@@ -70,8 +74,12 @@ class AyahMenuDialog extends StatelessWidget {
     final List<Widget> customMenuItems = s.customMenuItems ?? const [];
 
     // الحصول على أبعاد الشاشة والهوامش الآمنة / Get screen dimensions and safe area
-    final screenSize = MediaQuery.of(overlayContext).size;
-    final padding = MediaQuery.of(overlayContext).padding;
+    final screenSize = MediaQuery
+        .of(overlayContext)
+        .size;
+    final padding = MediaQuery
+        .of(overlayContext)
+        .padding;
 
     // حساب عدد العناصر الفعلي بناءً على الأزرار المرئية / Count all visible items
     int itemsCount = customMenuItems.length;
@@ -123,206 +131,210 @@ class AyahMenuDialog extends StatelessWidget {
           10; // هامش من الحافة السفلى / Bottom margin
     }
     return Obx(
-      () => QuranCtrl.instance.state.isShowMenu.value
+          () =>
+      QuranCtrl.instance.state.isShowMenu.value
           ? Positioned(
-              top: top,
-              left: left,
-              child: Container(
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(
-                        Radius.circular(s.outerBorderRadius ?? 8.0)),
-                    color: s.backgroundColor,
-                    boxShadow: s.boxShadow),
-                child: Container(
-                  padding: s.padding ??
-                      const EdgeInsets.symmetric(
-                          horizontal: 6.0, vertical: 2.0),
-                  margin: s.margin ?? const EdgeInsets.all(4.0),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(
-                        Radius.circular(s.borderRadius ?? 6.0)),
-                    border: Border.all(
-                      width: s.borderWidth ?? 2.0,
-                      color: s.borderColor ??
-                          Theme.of(overlayContext)
-                              .colorScheme
-                              .primary
-                              .withValues(alpha: 0.1),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: () {
-                      final List<Widget> widgets = [];
-                      Widget divider() => overlayContext.verticalDivider(
-                            height: s.dividerHeight,
-                            color: s.dividerColor,
-                          );
-
-                      void addDividerIfNeeded() {
-                        if (widgets.isNotEmpty) widgets.add(divider());
-                      }
-
-                      // عناصر إضافية مخصّصة (من الستايل ثم الاستدعاء)
-                      if (customMenuItems.isNotEmpty) {
-                        for (final item in customMenuItems) {
-                          addDividerIfNeeded();
-                          widgets.add(
-                            GestureDetector(
-                              behavior: HitTestBehavior.translucent,
-                              onTap: () {
-                                close();
-                              },
-                              child: item,
-                            ),
-                          );
-                        }
-                      }
-
-                      // زر تشغيل جميع الآيات
-                      if (s.showPlayButton ?? true) {
-                        addDividerIfNeeded();
-                        widgets.add(
-                          GestureDetector(
-                            onTap: () {
-                              close();
-
-                              AudioCtrl.instance.playAyah(
-                                rootContext,
-                                ayah!.ayahUQNumber,
-                                playSingleAyah: true,
-                                ayahAudioStyle: sAudio,
-                                ayahDownloadManagerStyle: sDownloadManager,
-                                isDarkMode: isDark,
-                              );
-                              log('Second Menu Child Tapped: ${ayah!.ayahUQNumber}');
-                            },
-                            child: Icon(
-                              s.playIconData,
-                              color: s.playIconColor,
-                              size: s.iconSize,
-                            ),
-                          ),
-                        );
-                      }
-
-                      // زر تشغيل جميع الآيات
-                      if ((s.showPlayAllButton ?? true) && !kIsWeb) {
-                        addDividerIfNeeded();
-                        widgets.add(
-                          GestureDetector(
-                            onTap: () {
-                              close();
-
-                              AudioCtrl.instance.playAyah(
-                                rootContext,
-                                ayah!.ayahUQNumber,
-                                playSingleAyah: false,
-                                ayahAudioStyle: sAudio,
-                                ayahDownloadManagerStyle: sDownloadManager,
-                                isDarkMode: isDark,
-                              );
-                              log('Second Menu Child Tapped: ${ayah!.ayahUQNumber}');
-                            },
-                            child: Icon(
-                              s.playAllIconData,
-                              color: s.playAllIconColor,
-                              size: s.iconSize,
-                            ),
-                          ),
-                        );
-                      }
-
-                      // زر التفسير
-                      if (s.showTafsirButton ?? true) {
-                        addDividerIfNeeded();
-                        widgets.add(
-                          GestureDetector(
-                            onTap: () {
-                              close();
-                              showTafsirOnTap(
-                                context: rootContext,
-                                isDark: isDark,
-                                ayahNum: ayah!.ayahNumber,
-                                pageIndex: pageIndex,
-                                ayahUQNum: ayah!.ayahUQNumber,
-                                ayahNumber: ayah!.ayahNumber,
-                                externalTafsirStyle: externalTafsirStyle,
-                              );
-                            },
-                            child: Icon(
-                              s.tafsirIconData,
-                              color: s.tafsirIconColor,
-                              size: s.iconSize,
-                            ),
-                          ),
-                        );
-                      }
-
-                      // زر النسخ
-                      if (s.showCopyButton ?? true) {
-                        addDividerIfNeeded();
-                        widgets.add(
-                          GestureDetector(
-                            onTap: () {
-                              Clipboard.setData(
-                                  ClipboardData(text: ayah!.text));
-                              close();
-                            },
-                            child: Icon(
-                              s.copyIconData,
-                              color: s.copyIconColor,
-                              size: s.iconSize,
-                            ),
-                          ),
-                        );
-                      }
-
-                      // أزرار العلامات المرجعية
-                      if (s.showBookmarkButtons ?? true) {
-                        final colors = s.bookmarkColorCodes ??
-                            const [
-                              0xAAFFD354,
-                              0xAAF36077,
-                              0xAA00CD00,
-                            ];
-                        for (final colorCode in colors) {
-                          widgets.add(
-                            Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: s.iconHorizontalPadding ?? 8.0,
-                              ),
-                              child: GestureDetector(
-                                onTap: () {
-                                  BookmarksCtrl.instance.saveBookmark(
-                                    surahName: QuranCtrl.instance
-                                        .getSurahDataByAyah(ayah!)
-                                        .arabicName,
-                                    ayahNumber: ayah!.ayahNumber,
-                                    ayahId: ayah!.ayahUQNumber,
-                                    page: ayah!.page,
-                                    colorCode: colorCode,
-                                  );
-                                  close();
-                                },
-                                child: Icon(
-                                  s.bookmarkIconData,
-                                  color: Color(colorCode),
-                                  size: s.iconSize,
-                                ),
-                              ),
-                            ),
-                          );
-                        }
-                      }
-
-                      return widgets;
-                    }(),
-                  ),
-                ),
+        top: top,
+        // make it centered horizontally
+        left: (screenSize.width - dialogWidth) / 2,
+        child: Container(
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(
+                  Radius.circular(s.outerBorderRadius ?? 8.0)),
+              color: s.backgroundColor,
+              boxShadow: s.boxShadow),
+          child: Container(
+            padding: s.padding ??
+                const EdgeInsets.symmetric(
+                    horizontal: 6.0, vertical: 2.0),
+            margin: s.margin ?? const EdgeInsets.all(4.0),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(
+                  Radius.circular(s.borderRadius ?? 6.0)),
+              border: Border.all(
+                width: s.borderWidth ?? 2.0,
+                color: s.borderColor ??
+                    Theme
+                        .of(overlayContext)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: 0.1),
               ),
-            )
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: () {
+                final List<Widget> widgets = [];
+                Widget divider() =>
+                    overlayContext.verticalDivider(
+                      height: s.dividerHeight,
+                      color: s.dividerColor,
+                    );
+
+                void addDividerIfNeeded() {
+                  if (widgets.isNotEmpty) widgets.add(divider());
+                }
+
+                // عناصر إضافية مخصّصة (من الستايل ثم الاستدعاء)
+                if (customMenuItems.isNotEmpty) {
+                  for (final item in customMenuItems) {
+                    addDividerIfNeeded();
+                    widgets.add(
+                      GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onTap: () {
+                          close();
+                        },
+                        child: item,
+                      ),
+                    );
+                  }
+                }
+
+                // زر تشغيل جميع الآيات
+                if (s.showPlayButton ?? true) {
+                  addDividerIfNeeded();
+                  widgets.add(
+                    GestureDetector(
+                      onTap: () {
+                        close();
+
+                        AudioCtrl.instance.playAyah(
+                          rootContext,
+                          ayah!.ayahUQNumber,
+                          playSingleAyah: true,
+                          ayahAudioStyle: sAudio,
+                          ayahDownloadManagerStyle: sDownloadManager,
+                          isDarkMode: isDark,
+                        );
+                        log('Second Menu Child Tapped: ${ayah!.ayahUQNumber}');
+                      },
+                      child: Icon(
+                        s.playIconData,
+                        color: s.playIconColor,
+                        size: s.iconSize,
+                      ),
+                    ),
+                  );
+                }
+
+                // زر تشغيل جميع الآيات
+                if ((s.showPlayAllButton ?? true) && !kIsWeb) {
+                  addDividerIfNeeded();
+                  widgets.add(
+                    GestureDetector(
+                      onTap: () {
+                        close();
+
+                        AudioCtrl.instance.playAyah(
+                          rootContext,
+                          ayah!.ayahUQNumber,
+                          playSingleAyah: false,
+                          ayahAudioStyle: sAudio,
+                          ayahDownloadManagerStyle: sDownloadManager,
+                          isDarkMode: isDark,
+                        );
+                        log('Second Menu Child Tapped: ${ayah!.ayahUQNumber}');
+                      },
+                      child: Icon(
+                        s.playAllIconData,
+                        color: s.playAllIconColor,
+                        size: s.iconSize,
+                      ),
+                    ),
+                  );
+                }
+
+                // زر التفسير
+                if (s.showTafsirButton ?? true) {
+                  addDividerIfNeeded();
+                  widgets.add(
+                    GestureDetector(
+                      onTap: () {
+                        close();
+                        showTafsirOnTap(
+                          context: rootContext,
+                          isDark: isDark,
+                          ayahNum: ayah!.ayahNumber,
+                          pageIndex: pageIndex,
+                          ayahUQNum: ayah!.ayahUQNumber,
+                          ayahNumber: ayah!.ayahNumber,
+                          externalTafsirStyle: externalTafsirStyle,
+                        );
+                      },
+                      child: Icon(
+                        s.tafsirIconData,
+                        color: s.tafsirIconColor,
+                        size: s.iconSize,
+                      ),
+                    ),
+                  );
+                }
+
+                // زر النسخ
+                if (s.showCopyButton ?? true) {
+                  addDividerIfNeeded();
+                  widgets.add(
+                    GestureDetector(
+                      onTap: () {
+                        Clipboard.setData(
+                            ClipboardData(text: ayah!.text));
+                        close();
+                      },
+                      child: Icon(
+                        s.copyIconData,
+                        color: s.copyIconColor,
+                        size: s.iconSize,
+                      ),
+                    ),
+                  );
+                }
+
+                // أزرار العلامات المرجعية
+                if (s.showBookmarkButtons ?? true) {
+                  final colors = s.bookmarkColorCodes ??
+                      const [
+                        0xAAFFD354,
+                        0xAAF36077,
+                        0xAA00CD00,
+                      ];
+                  for (final colorCode in colors) {
+                    widgets.add(
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: s.iconHorizontalPadding ?? 8.0,
+                        ),
+                        child: GestureDetector(
+                          onTap: () {
+                            BookmarksCtrl.instance.saveBookmark(
+                              surahName: QuranCtrl.instance
+                                  .getSurahDataByAyah(ayah!)
+                                  .arabicName,
+                              ayahNumber: ayah!.ayahNumber,
+                              ayahId: ayah!.ayahUQNumber,
+                              page: ayah!.page,
+                              colorCode: colorCode,
+                            );
+                            close();
+                          },
+                          child: Icon(
+                            s.bookmarkIconData,
+                            color: Color(colorCode),
+                            size: s.iconSize,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+                }
+
+                return widgets;
+              }(),
+            ),
+          ),
+        ),
+      )
           : const SizedBox.shrink(),
     );
   }
@@ -344,7 +356,9 @@ Future<void> showAyahMenuDialog({
   await showGeneralDialog<void>(
     context: context,
     barrierDismissible: true,
-    barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+    barrierLabel: MaterialLocalizations
+        .of(context)
+        .modalBarrierDismissLabel,
     barrierColor: Colors.transparent,
     transitionDuration: Duration.zero,
     pageBuilder: (dialogContext, _, __) {
