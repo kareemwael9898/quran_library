@@ -1,8 +1,20 @@
-## 3.2.4
+## 4.0.1
+
+* **FIX:**
+  * Fix the Ayah shown in the Tafsir.
+
+## 4.0.0
+
+* **BREAKING CHANGES:**
+  * Update Tajweed fonts.
 
 * **ADD:**
   * Auto-Scroll Feature.
   * Reader Ali Jaber for Ayahs & Surahs.
+  * custom number converter.
+
+* **FIX:**
+  * Fix jumpToPage in dual page view.
 
 ## 3.2.3
 

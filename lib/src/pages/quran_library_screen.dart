@@ -70,6 +70,8 @@ class QuranLibraryScreen extends StatelessWidget {
     this.ayahTafsirInlineStyle,
     this.quranTafsirSideStyle,
     this.wordInfoBottomSheetStyle,
+    this.isShowDisplayModeBar = true,
+    this.autoScrollStyle,
   });
 
   /// إذا قمت بإضافة شريط التطبيقات هنا فإنه سيحل محل شريط التطبيقات الافتراضية [appBar]
@@ -344,6 +346,16 @@ class QuranLibraryScreen extends StatelessWidget {
   /// [wordInfoBottomSheetStyle] Style customization for the word info bottom sheet display mode
   final WordInfoBottomSheetStyle? wordInfoBottomSheetStyle;
 
+  /// نمط تخصيص معلومات الكلمة
+  ///
+  /// [autoScrollStyle] Style customization for the auto scroll feature
+  final AutoScrollStyle? autoScrollStyle;
+
+  /// نمط تخصيص شريط اختيار وضع العرض
+  ///
+  /// [isShowDisplayModeBar] To specify whether to show the display mode bar or not
+  final bool? isShowDisplayModeBar;
+
   @override
   Widget build(BuildContext context) {
     // تحديث رابط أيقونة التطبيق إذا تم تمريره / Update app icon URL if provided
@@ -411,6 +423,8 @@ class QuranLibraryScreen extends StatelessWidget {
             wordInfoBottomSheetStyle: wordInfoBottomSheetStyle ??
                 WordInfoBottomSheetStyle.defaults(
                     isDark: isDark, context: context),
+            autoScrollStyle: autoScrollStyle ??
+                AutoScrollStyle.defaults(isDark: isDark, context: context),
             child: GetBuilder<QuranCtrl>(
               builder: (quranCtrl) {
                 // تهيئة خاملة لخطوط الصفحات المجاورة حول الصفحة الحالية بعد أول إطار
@@ -649,6 +663,8 @@ class QuranLibraryScreen extends StatelessWidget {
                           isFontsLocal: isFontsLocal,
                           isShowTabBar: isShowTabBar,
                           topBarStyle: topBarStyle,
+                          isShowDisplayModeBar: isShowDisplayModeBar,
+                          autoScrollStyle: autoScrollStyle,
                         ),
                       ],
                     ),
@@ -787,6 +803,8 @@ class _ControlWidget extends StatelessWidget {
     required this.isFontsLocal,
     required this.isShowTabBar,
     required this.topBarStyle,
+    required this.isShowDisplayModeBar,
+    required this.autoScrollStyle,
   });
 
   final bool? isShowAudioSlider;
@@ -802,7 +820,9 @@ class _ControlWidget extends StatelessWidget {
   final DownloadFontsDialogStyle? downloadFontsDialogStyle;
   final bool? isFontsLocal;
   final bool? isShowTabBar;
+  final bool? isShowDisplayModeBar;
   final QuranTopBarStyle? topBarStyle;
+  final AutoScrollStyle? autoScrollStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -871,19 +891,26 @@ class _ControlWidget extends StatelessWidget {
                         : const SizedBox.shrink(),
                     // شريط اختيار وضع العرض - يظهر على الجانب
                     // Display mode selector bar - appears on the side
-                    Positioned(
-                      right: 8,
-                      top: 0,
-                      bottom: 0,
-                      child: Center(
-                        child: DisplayModeBar(
-                          isDark: isDark,
-                          languageCode: languageCode,
+                    if (isShowDisplayModeBar!)
+                      Positioned(
+                        right: 8,
+                        top: 0,
+                        bottom: 0,
+                        child: Center(
+                          child: DisplayModeBar(
+                            isDark: isDark,
+                            languageCode: languageCode,
+                          ),
                         ),
                       ),
-                    ),
                     // شريط التحكم بسرعة السكرول التلقائي — يبقى ظاهرًا بشكل مستقل
-                    AutoScrollSpeedSlider(isDark: isDark),
+                    AutoScrollSpeedSlider(
+                      isDark: isDark,
+                      autoScrollStyle: autoScrollStyle ??
+                          AutoScrollStyle.defaults(
+                              isDark: isDark, context: context),
+                      languageCode: languageCode,
+                    ),
                   ],
                 ),
               ),
