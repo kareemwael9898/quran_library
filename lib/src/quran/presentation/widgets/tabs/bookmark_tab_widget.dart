@@ -4,6 +4,7 @@ class _BookmarksTab extends StatelessWidget {
   final bool isDark;
   final String languageCode;
   final BookmarksTabStyle? style;
+
   const _BookmarksTab({
     required this.isDark,
     required this.languageCode,
@@ -66,13 +67,14 @@ class _BookmarksTab extends StatelessWidget {
                   //       color: effectiveStyle.textColor!),
                   // ),
                   initiallyExpanded: true,
-                  title: Text(
-                    'عدد: ${bookmarks.length}'.convertNumbersAccordingToLang(
-                        languageCode: languageCode),
-                    style: QuranLibrary().cairoStyle.copyWith(
-                        color: effectiveStyle.subtitleTextColor!,
-                        fontSize: effectiveStyle.subtitleFontSize!),
-                  ),
+                  title: const Text(''),
+                  // subtitle: Text(
+                  //   'عدد: ${bookmarks.length}'.convertNumbersAccordingToLang(
+                  //       languageCode: languageCode),
+                  //   style: QuranLibrary().cairoStyle.copyWith(
+                  //       color: effectiveStyle.subtitleTextColor!,
+                  //       fontSize: effectiveStyle.subtitleFontSize!),
+                  // ),
                   childrenPadding: EdgeInsets.symmetric(
                       horizontal: effectiveStyle.childrenPaddingHorizontal!,
                       vertical: effectiveStyle.childrenPaddingVertical!),
@@ -156,16 +158,24 @@ class _BookmarksTab extends StatelessWidget {
                                         bookmark.name,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: QuranLibrary()
-                                            .cairoStyle
-                                            .copyWith(
-                                                fontSize: effectiveStyle
-                                                    .bookmarkNameFontSize!,
-                                                fontWeight:
-                                                    effectiveStyle
-                                                        .bookmarkNameFontWeight!,
-                                                color:
-                                                    effectiveStyle.textColor!),
+                                        // style: QuranLibrary()
+                                        //     .cairoStyle
+                                        //     .copyWith(
+                                        //         fontSize: effectiveStyle
+                                        //             .bookmarkNameFontSize!,
+                                        //         fontWeight:
+                                        //             effectiveStyle
+                                        //                 .bookmarkNameFontWeight!,
+                                        //         color:
+                                        //             effectiveStyle.textColor!),
+                                        style: TextStyle(
+                                            fontSize: effectiveStyle
+                                                .bookmarkNameFontSize!,
+                                            fontWeight: effectiveStyle
+                                                .bookmarkNameFontWeight!,
+                                            color:
+                                                effectiveStyle.textColor!,
+                                            height: 1.2),
                                       ),
                                       SizedBox(
                                           height: effectiveStyle
