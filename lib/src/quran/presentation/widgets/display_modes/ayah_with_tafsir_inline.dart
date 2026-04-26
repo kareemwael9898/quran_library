@@ -539,7 +539,9 @@ class _InlineAyahTafsirItem extends StatelessWidget {
                   basmalaStyle: basmalaStyle ??
                       BasmalaStyle(
                         basmalaColor: AppColors.getTextColor(isDark),
-                        basmalaFontSize: 23.0.w,
+                        // basmalaFontSize: 23.0.w,
+                        /// ضبط حجم البسملة ليتناسب مع حجم خط الآية
+                        basmalaFontSize: fontSize,
                         verticalPadding: 0.0,
                       ),
                 )
