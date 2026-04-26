@@ -219,6 +219,9 @@ class _SearchTabState extends State<_SearchTab> {
                   ),
                   itemBuilder: (context, i) {
                     final ayah = quranCtrl.searchResultAyahs[i];
+                    final isMobile =
+                        !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+                    final responsiveFontSize = isMobile ? 22 : 26;
                     return ListTile(
                       onTap: () {
                         Navigator.pop(context);
@@ -241,7 +244,7 @@ class _SearchTabState extends State<_SearchTab> {
                           surahNumber: ayah.surahNumber!,
                           ayahNumber: ayah.ayahNumber,
                           isBold: false,
-                          fontSize: 26,
+                          fontSize: responsiveFontSize.toDouble(),
                           textColor: textColor,
                           isDark: widget.isDark,
                           pageIndex: ayah.page,
