@@ -201,7 +201,7 @@ class QuranTopBarStyle {
       fontsDialogDownloadingText: 'جارِ التحميل',
       tabIndexLabel: 'الفهرس',
       tabSearchLabel: 'البحث',
-      tabBookmarksLabel: 'الفواصل',
+      tabBookmarksLabel: 'العلامات',
       tabSurahsLabel: 'السور',
       tabJozzLabel: 'الأجزاء',
       showMenuButton: true,

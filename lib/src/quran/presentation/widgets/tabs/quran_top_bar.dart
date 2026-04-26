@@ -382,7 +382,7 @@ class _MenuBottomSheet extends StatelessWidget {
                   tabs: [
                     if (!isSingleSurah)
                       Tab(text: style.tabIndexLabel ?? 'الفهرس'),
-                    Tab(text: style.tabBookmarksLabel ?? 'الفواصل'),
+                    Tab(text: style.tabBookmarksLabel ?? 'العلامات'),
                   ],
                 ),
               ),

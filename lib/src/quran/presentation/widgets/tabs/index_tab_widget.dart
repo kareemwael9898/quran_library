@@ -255,7 +255,8 @@ class _JozzList extends StatelessWidget {
               BorderRadius.circular((style.listItemRadius ?? 8).toDouble()),
         ),
         child: ExpansionTile(
-          initiallyExpanded: currentJozzIndex == jozzIndex,
+          // initiallyExpanded: currentJozzIndex == jozzIndex,
+          initiallyExpanded: true,
           collapsedShape: RoundedRectangleBorder(
             borderRadius:
                 BorderRadius.circular((style.listItemRadius ?? 8).toDouble()),
