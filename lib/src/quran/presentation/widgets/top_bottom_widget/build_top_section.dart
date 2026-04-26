@@ -48,7 +48,7 @@ class BuildTopSection extends StatelessWidget {
                     ? const SizedBox(width: 16)
                     : const SizedBox.shrink(),
                 Text(
-                  '$effectiveJuzName: ${juz.juz}'.convertNumbersAccordingToLang(
+                  '$effectiveJuzName ${juz.juz}'.convertNumbersAccordingToLang(
                       languageCode: languageCode),
                   style: _getTextStyle(context, juzColor),
                 ),
@@ -119,7 +119,7 @@ class BuildTopSection extends StatelessWidget {
                         : const SizedBox.shrink(),
                 const Spacer(),
                 Text(
-                  '$effectiveJuzName: ${quranCtrl.getJuzByPage(pageIndex).juz}'
+                  '$effectiveJuzName ${quranCtrl.getJuzByPage(pageIndex).juz}'
                       .convertNumbersAccordingToLang(
                           languageCode: languageCode),
                   style: _getTextStyle(context, juzColor),
