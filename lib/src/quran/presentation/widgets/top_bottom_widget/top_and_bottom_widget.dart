@@ -127,7 +127,7 @@ class TopAndBottomWidget extends StatelessWidget {
                     surahNumber: surahNumber,
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 40.0),
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: child,
                   ),
                   BuildBottomSection(
