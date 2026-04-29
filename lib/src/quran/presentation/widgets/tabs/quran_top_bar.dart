@@ -94,10 +94,10 @@ class _QuranTopBar extends StatelessWidget {
                   _showDialog(context, tajweedStyle);
                 },
               ),
-            const Spacer(),
+            // const Spacer(),
             if (defaults.customTopBarWidgets != null)
               ...defaults.customTopBarWidgets!,
-            const Spacer(),
+            // const Spacer(),
             Row(
               children: [
                 if (defaults.showAutoScrollButton ?? true)
