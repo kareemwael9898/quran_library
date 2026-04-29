@@ -52,11 +52,36 @@ class DisplayModeBar extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // 'show menu button'
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      borderRadius:
+                          BorderRadius.circular((s.borderRadius ?? 16) - 4),
+                      border: Border.all(
+                        color: (s.selectedBackgroundColor ?? Colors.teal)
+                            .withValues(alpha: .5),
+                        width: 1,
+                      ),
+                    ),
+                    child: IconButton(
+                      icon: SvgPicture.asset(AssetsPath.assets.buttomSheet,
+                          colorFilter: ColorFilter.mode(
+                              Theme.of(context).colorScheme.primary,
+                              BlendMode.srcIn)),
+                      onPressed: () {
+                        _QuranTopBar.showMenuBottomSheetGlobalInModeBar(
+                            context);
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   // search Icon button
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.transparent,
-                      borderRadius: BorderRadius.circular((s.borderRadius ?? 16) - 4),
+                      borderRadius:
+                          BorderRadius.circular((s.borderRadius ?? 16) - 4),
                       border: Border.all(
                         color: (s.selectedBackgroundColor ?? Colors.teal)
                             .withValues(alpha: .5),
@@ -66,8 +91,7 @@ class DisplayModeBar extends StatelessWidget {
                     child: IconButton(
                       icon: Icon(
                         Icons.search,
-                        color:
-                            Theme.of(context).colorScheme.primary,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                       onPressed: () {
                         QuranCtrl.instance.searchFocusNode.requestFocus();
@@ -75,7 +99,11 @@ class DisplayModeBar extends StatelessWidget {
                       },
                     ),
                   ),
-                  // use buildModeButton to build the search button
+                  const SizedBox(height: 8),
+                  Divider(
+                    color: Colors.black87,
+                  ),
+
                   ...availableModes
                       .map((mode) => _buildModeButton(
                             context: context,
