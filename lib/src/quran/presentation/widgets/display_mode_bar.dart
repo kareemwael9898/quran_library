@@ -51,15 +51,41 @@ class DisplayModeBar extends StatelessWidget {
                   const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                children: availableModes
-                    .map((mode) => _buildModeButton(
-                          context: context,
-                          mode: mode,
-                          isSelected: mode == currentMode,
-                          style: s,
-                          onTap: () => quranCtrl.setDisplayMode(mode),
-                        ))
-                    .toList(),
+                children: [
+                  // search Icon button
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular((s.borderRadius ?? 16) - 4),
+                      border: Border.all(
+                        color: (s.selectedBackgroundColor ?? Colors.teal)
+                            .withValues(alpha: .5),
+                        width: 1,
+                      ),
+                    ),
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.search,
+                        color:
+                            Theme.of(context).colorScheme.primary,
+                      ),
+                      onPressed: () {
+                        QuranCtrl.instance.searchFocusNode.requestFocus();
+                        showSearchDialogGlobalToBeAddedToModeBar(context);
+                      },
+                    ),
+                  ),
+                  // use buildModeButton to build the search button
+                  ...availableModes
+                      .map((mode) => _buildModeButton(
+                            context: context,
+                            mode: mode,
+                            isSelected: mode == currentMode,
+                            style: s,
+                            onTap: () => quranCtrl.setDisplayMode(mode),
+                          ))
+                      .toList(),
+                ],
               ),
             ),
           ),

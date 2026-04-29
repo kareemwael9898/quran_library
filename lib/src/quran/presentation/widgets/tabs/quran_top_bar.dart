@@ -302,6 +302,46 @@ class _QuranTopBar extends StatelessWidget {
       ),
     );
   }
+
+  static void showMenuBottomSheetGlobalInModeBar(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final QuranTopBarStyle defaults = QuranTopBarTheme.of(context)?.style ??
+        QuranTopBarStyle.defaults(isDark: isDark, context: context);
+
+    final indexTabStyle = IndexTabTheme.of(context)?.style ??
+        IndexTabStyle.defaults(isDark: isDark, context: context);
+    final searchTabStyle = SearchTabTheme.of(context)?.style ??
+        SearchTabStyle.defaults(isDark: isDark, context: context);
+    final bookmarksTabStyle = BookmarksTabTheme.of(context)?.style ??
+        BookmarksTabStyle.defaults(isDark: isDark, context: context);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: defaults.backgroundColor ??
+          AppColors.getBackgroundColor(isDark),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+            top: Radius.circular(defaults.borderRadius ?? 20)),
+      ),
+      isScrollControlled: true,
+      constraints: BoxConstraints(
+        maxWidth: UiHelper.currentOrientation(
+            double.infinity, MediaQuery.sizeOf(context).width * 0.5, context),
+      ),
+      builder: (ctx) => _MenuBottomSheet(
+        isDark: isDark,
+        languageCode: 'ar',
+        backgroundColor: defaults.backgroundColor ??
+            AppColors.getBackgroundColor(isDark),
+        style: defaults,
+        indexTabStyle: indexTabStyle,
+        searchTabStyle: searchTabStyle,
+        bookmarksTabStyle: bookmarksTabStyle,
+        isSingleSurah: false,
+      ),
+    );
+  }
 }
 
 // BottomSheet container with main TabBar
@@ -410,4 +450,52 @@ class _MenuBottomSheet extends StatelessWidget {
       ),
     );
   }
+}
+
+void showSearchDialogGlobalToBeAddedToModeBar(BuildContext context) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  final searchTabStyle = SearchTabTheme.of(context)?.style ??
+      SearchTabStyle.defaults(isDark: isDark, context: context);
+  showDialog(
+    context: context,
+    useSafeArea: true,
+    builder: (context) {
+      return Dialog.fullscreen(
+        backgroundColor: AppColors.getBackgroundColor(isDark),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            iconTheme: IconThemeData(
+              color:
+                  searchTabStyle.textColor ?? AppColors.getTextColor(isDark),
+            ),
+            title: Text(
+              'البحث في المصحف',
+              style: QuranLibrary().cairoStyle.copyWith(
+                    color:
+                        searchTabStyle.textColor ?? AppColors.getTextColor(isDark),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            centerTitle: true,
+            leading: IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+          body: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: _SearchTab(
+              isDark: isDark,
+              languageCode: 'ar',
+              style: searchTabStyle,
+            ),
+          ),
+        ),
+      );
+    },
+  );
 }
