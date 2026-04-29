@@ -183,6 +183,8 @@ class _QuranTopBar extends StatelessWidget {
                     isFontsLocal: isFontsLocal,
                     isDark: isDark,
                   ),
+                // My note:
+                if(false)
                 IconButton(
                   icon: Icon(
                     Icons.search,
