@@ -1,3 +1,8 @@
+## 4.0.2
+
+* **FIX:**
+  * Prevent `AutoScrollCtrl.onClose()` from overwriting the last saved page when auto-scroll was never active. Previously, `stopAutoScroll()` would save page 1 (default) during route disposal, causing the reading progress to reset.
+
 ## 4.0.1
 
 * **FIX:**
