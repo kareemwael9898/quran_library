@@ -775,6 +775,13 @@ class QuranLibraryScreen extends StatelessWidget {
   }
 
   void _onPageChange(BuildContext context, int pageIndex, QuranCtrl quranCtrl) {
+    // تحديث الصفحة وحفظها فورًا (قبل الـ post-frame callback) لضمان عدم ضياعها
+    // حتى لو تمت إزالة الـ widget قبل تنفيذ الـ callback.
+    // Update page & save immediately (before the post-frame callback) so the
+    // page is never lost even if the widget is disposed before the callback fires.
+    quranCtrl.state.currentPageNumber.value = pageIndex + 1;
+    quranCtrl.saveLastPage(pageIndex + 1);
+
     // تشغيل العمليات في الخلفية لتجنب تجميد UI
     // Run operations in background to avoid UI freeze
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -783,8 +790,6 @@ class QuranLibraryScreen extends StatelessWidget {
         // لا تلمس الـ Overlay إذا كان المستخدم يدير الحدث بنفسه
         onPageChanged!(pageIndex);
       }
-      quranCtrl.state.currentPageNumber.value = pageIndex + 1;
-      quranCtrl.saveLastPage(pageIndex + 1);
 
       if (quranCtrl.state.fontsSelected.value == 0) {
         // جدولة تحضير QPC v4 بعد خمول حتى لا ينافس أثناء التقليب.

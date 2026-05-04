@@ -666,11 +666,18 @@ class QuranCtrl extends GetxController {
         'targetFraction=$targetFraction',
         name: 'QuranCtrl');
 
-    // أعد إنشاء المتحكم فقط عند تغيّر viewportFraction.
-    // لا نتحقق من hasClients لأن jumpToPage في onInit ينشئ controller بـ initialPage صحيح
-    // وإعادة إنشائه قبل ربطه بالـ PageView يضيع تلك القيمة.
+    // أعد إنشاء المتحكم عند تغيّر viewportFraction أو عند عدم وجود clients
+    // (أي أن الـ PageView القديم تم التخلص منه والشاشة أُعيد فتحها).
+    // بدون هذا التحقق، الـ controller القديم يحتفظ بـ initialPage من أول فتح
+    // ولا يعكس آخر صفحة حفظها المستخدم.
+    //
+    // Recreate the controller when viewportFraction changes OR when the
+    // controller has no clients (the old PageView was disposed and the screen
+    // was reopened). Without this check the old controller keeps a stale
+    // initialPage from the first open and ignores the user's last saved page.
     final bool needsNewController =
-        quranPagesController.viewportFraction != targetFraction;
+        quranPagesController.viewportFraction != targetFraction ||
+        !quranPagesController.hasClients;
 
     if (needsNewController) {
       // حافظ على الفهرس الحالي للصفحة
@@ -683,6 +690,8 @@ class QuranCtrl extends GetxController {
         // قراءة مباشرة من التخزين — المصدر الأوثق للصفحة المحفوظة
         final savedPage = _quranRepository.getLastPage() ?? 1;
         currentIndex = savedPage - 1;
+        log('Controller detached — restoring saved page: $savedPage',
+            name: 'QuranCtrl');
       }
       currentIndex = currentIndex.clamp(0, 603);
       // في وضع الصفحتين: محاذاة الفهرس إلى رقم زوجي لعرض الزوج الصحيح
@@ -695,7 +704,7 @@ class QuranCtrl extends GetxController {
       final oldController = quranPagesController;
       quranPagesController = PreloadPageController(
         initialPage: currentIndex,
-        keepPage: kIsWeb || GetPlatform.isDesktop,
+        keepPage: true,
         viewportFraction: targetFraction,
       );
 
