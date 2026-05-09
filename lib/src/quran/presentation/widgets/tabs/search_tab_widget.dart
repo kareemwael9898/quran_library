@@ -34,12 +34,8 @@ class _SearchTabState extends State<_SearchTab> {
     if (kIsWeb) {
       final rl = QuranCtrl.instance.state.quranPageRLFocusNode;
       rl.canRequestFocus = true;
-      // اطلب التركيز من جديد للسهام اليسار/اليمين
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          FocusScope.of(context).requestFocus(rl);
-        }
-      });
+      // اطلب التركيز مباشرة بدون التحقق من mounted لأن الويدجت يكون قد تم إلغاؤه
+      rl.requestFocus();
     }
     super.dispose();
   }
@@ -103,9 +99,9 @@ class _SearchTabState extends State<_SearchTab> {
 
                 // clear button
                 suffixIcon: IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.cancel_outlined,
-                    color: Colors.black,
+                    color: textColor.withValues(alpha: 0.6),
                   ),
                   onPressed: () {
                     QuranCtrl.instance.searchTextController.clear();

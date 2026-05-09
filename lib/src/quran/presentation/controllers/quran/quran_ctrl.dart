@@ -187,13 +187,19 @@ class QuranCtrl extends GetxController {
     if (lastPage != 0) {
       jumpToPage(lastPage - 1);
     }
-    if (surahs.isEmpty) {
+    // حماية من التحميل المتعدد: تحقق من surahs و allAyahs معاً
+    if (surahs.isEmpty && state.allAyahs.isEmpty) {
       List<dynamic> surahsJson = await _quranRepository.getQuranDataV3();
       surahs =
           surahsJson.map((s) => SurahModel.fromDownloadedFontsJson(s)).toList();
 
       // مزامنة القوائم على مستوى الـ instance مع state لتجنب القوائم الفارغة
       // surahs.addAll(surahs);
+
+      // مسح القوائم أولاً لتجنب أي تكرار محتمل
+      state.allAyahs.clear();
+      ayahs.clear();
+      state.pages.clear();
 
       for (final surah in surahs) {
         // نقل بيانات السورة إلى كل آية حتى يعمل البحث بشكل صحيح
@@ -523,6 +529,10 @@ class QuranCtrl extends GetxController {
             matchesAyahNumber;
       }).toList();
 
+      // إزالة التكرارات بناءً على الرقم الفريد للآية
+      final seen = <int>{};
+      filteredAyahs.retainWhere((ayah) => seen.add(ayah.ayahUQNumber));
+
       return filteredAyahs;
     }
   }
@@ -577,6 +587,10 @@ class QuranCtrl extends GetxController {
 
         return matchesSurahName || matchesSurahNumber;
       }).toList();
+
+      // إزالة التكرارات بناءً على رقم السورة
+      final seen = <int>{};
+      filteredSurahs.retainWhere((surah) => seen.add(surah.surahNumber));
 
       return filteredSurahs;
     }
