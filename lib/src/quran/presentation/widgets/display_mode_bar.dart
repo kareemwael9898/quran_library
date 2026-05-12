@@ -53,29 +53,29 @@ class DisplayModeBar extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // 'show menu button'
-                  // Container(
-                  //   decoration: BoxDecoration(
-                  //     color: Colors.transparent,
-                  //     borderRadius:
-                  //         BorderRadius.circular((s.borderRadius ?? 16) - 4),
-                  //     border: Border.all(
-                  //       color: (s.selectedBackgroundColor ?? Colors.teal)
-                  //           .withValues(alpha: .5),
-                  //       width: 1,
-                  //     ),
-                  //   ),
-                  //   child: IconButton(
-                  //     icon: SvgPicture.asset(AssetsPath.assets.buttomSheet,
-                  //         colorFilter: ColorFilter.mode(
-                  //             Theme.of(context).colorScheme.primary,
-                  //             BlendMode.srcIn)),
-                  //     onPressed: () {
-                  //       _QuranTopBar.showMenuBottomSheetGlobalInModeBar(
-                  //           context);
-                  //     },
-                  //   ),
-                  // ),
-                  // const SizedBox(height: 8),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      borderRadius:
+                          BorderRadius.circular((s.borderRadius ?? 16) - 4),
+                      border: Border.all(
+                        color: (s.selectedBackgroundColor ?? Colors.teal)
+                            .withValues(alpha: .5),
+                        width: 1,
+                      ),
+                    ),
+                    child: IconButton(
+                      icon: SvgPicture.asset(AssetsPath.assets.buttomSheet,
+                          colorFilter: ColorFilter.mode(
+                              Theme.of(context).colorScheme.primary,
+                              BlendMode.srcIn)),
+                      onPressed: () {
+                        _QuranTopBar.showMenuBottomSheetGlobalInModeBar(
+                            context);
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   // search Icon button
                   Container(
                     decoration: BoxDecoration(
