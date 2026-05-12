@@ -67,7 +67,8 @@ class DisplayModeBar extends StatelessWidget {
                     child: IconButton(
                       icon: SvgPicture.asset(AssetsPath.assets.buttomSheet,
                           colorFilter: ColorFilter.mode(
-                              Theme.of(context).colorScheme.primary,
+                              style?.unselectedIconColor ??
+                                  Colors.grey.shade600,
                               BlendMode.srcIn)),
                       onPressed: () {
                         _QuranTopBar.showMenuBottomSheetGlobalInModeBar(
@@ -91,7 +92,8 @@ class DisplayModeBar extends StatelessWidget {
                     child: IconButton(
                       icon: Icon(
                         Icons.search,
-                        color: Theme.of(context).colorScheme.primary,
+                        color:
+                            style?.unselectedIconColor ?? Colors.grey.shade600,
                       ),
                       onPressed: () {
                         QuranCtrl.instance.searchFocusNode.requestFocus();
