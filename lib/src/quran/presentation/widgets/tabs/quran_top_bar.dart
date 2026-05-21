@@ -374,8 +374,12 @@ class _MenuBottomSheet extends StatelessWidget {
     final Color accentColor =
         style.accentColor ?? Theme.of(context).colorScheme.primary;
 
+    final jozzList = QuranLibrary.allJoz;
+    final hizbList = QuranLibrary.allHizb;
+    final surahs = QuranLibrary.getAllSurahs(isArabic: false);
+
     return DefaultTabController(
-      length: isSingleSurah ? 1 : 2,
+      length: isSingleSurah ? 1 : 3,
       child: SafeArea(
         top: false,
         child: Container(
@@ -423,7 +427,9 @@ class _MenuBottomSheet extends StatelessWidget {
                       QuranLibrary().cairoStyle.copyWith(fontSize: 15),
                   tabs: [
                     if (!isSingleSurah)
-                      Tab(text: style.tabIndexLabel ?? 'الفهرس'),
+                      Tab(text: indexTabStyle.tabSurahsLabel ?? 'السور'),
+                    if (!isSingleSurah)
+                      Tab(text: indexTabStyle.tabJozzLabel ?? 'الأجزاء'),
                     Tab(text: style.tabBookmarksLabel ?? 'العلامات'),
                   ],
                 ),
@@ -433,9 +439,17 @@ class _MenuBottomSheet extends StatelessWidget {
                 child: TabBarView(
                   children: [
                     if (!isSingleSurah)
-                      _IndexTab(
+                      _SurahsList(
                         isDark: isDark,
                         languageCode: languageCode,
+                        surahs: surahs,
+                        style: indexTabStyle,
+                      ),
+                    if (!isSingleSurah)
+                      _JozzList(
+                        isDark: isDark,
+                        jozzList: jozzList,
+                        hizbList: hizbList,
                         style: indexTabStyle,
                       ),
                     _BookmarksTab(

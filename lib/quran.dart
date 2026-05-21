@@ -64,6 +64,7 @@ part 'src/quran/data/models/auto_scroll_stop_condition.dart';
 part 'src/quran/data/models/ayah_model.dart';
 part 'src/quran/data/models/display_mode.dart';
 part 'src/quran/data/models/quran_constants.dart';
+part 'src/quran/data/models/rub_openings.dart';
 part 'src/quran/data/models/quran_fonts_models/download_fonts_dialog_style.dart';
 part 'src/quran/data/models/quran_fonts_models/sajda_model.dart';
 part 'src/quran/data/models/quran_page.dart';
@@ -135,6 +136,7 @@ part 'src/quran/presentation/widgets/top_bottom_widget/top_and_bottom_widget.dar
 part 'src/quran/presentation/widgets/word_info/marked_content_span.dart';
 part 'src/quran/presentation/widgets/word_info/tap_long_press_recognizer.dart';
 part 'src/quran/presentation/widgets/word_info/word_info_bottom_sheet.dart';
+part 'src/quran/presentation/widgets/word_action_tooltip.dart';
 
 /// A comprehensive library for displaying the Holy Quran in Flutter applications.
 ///

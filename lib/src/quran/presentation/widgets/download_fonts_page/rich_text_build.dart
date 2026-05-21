@@ -59,12 +59,23 @@ class QpcV4RichTextLine extends StatefulWidget {
   State<QpcV4RichTextLine> createState() => _QpcV4RichTextLineState();
 }
 
+/// Maps a character offset range in a RichText line to a [WordRef].
+class _WordCharRange {
+  final int start;
+  final int end; // exclusive
+  final WordRef ref;
+  const _WordCharRange({required this.start, required this.end, required this.ref});
+}
+
 class _QpcV4RichTextLineState extends State<QpcV4RichTextLine> {
   /// كاش الويدجت المبني — يُعاد بناؤه فقط عند تغيّر selection/bookmarks/word_info
   Widget? _cachedWidget;
 
   /// بصمة البيانات المؤثرة على البناء — عند تغيّرها يُبطل الكاش
   int _lastFingerprint = 0;
+
+  /// Key used to hit-test the RenderParagraph for slide-to-extend word selection.
+  final _richTextKey = GlobalKey();
 
   /// حساب بصمة سريعة للبيانات التي تؤثر فعلياً على شكل الويدجت
   int _computeFingerprint() {
@@ -91,6 +102,12 @@ class _QpcV4RichTextLineState extends State<QpcV4RichTextLine> {
         QuranCtrl.instance.state.isTajweedEnabled.value.hashCode;
     final wordSelectedHash =
         WordInfoCtrl.instance.selectedWordRef.value.hashCode;
+    final wordHighlightEndHash =
+        WordInfoCtrl.instance.wordHighlightEndRef.value.hashCode;
+    final wordHighlightColorHash =
+        WordInfoCtrl.instance.wordHighlightColor.value.hashCode;
+    final savedHighlightsHash =
+        WordInfoCtrl.instance.savedHighlightsRevision.hashCode;
     // حالة تبويب القراءات العشر
     final tenRecHash = WordInfoCtrl.instance.tabController.index.hashCode;
     // تغيّر بيانات القراءات (عند اكتمال prewarm)
@@ -105,6 +122,9 @@ class _QpcV4RichTextLineState extends State<QpcV4RichTextLine> {
         isDarkHash,
         tajweedHash,
         wordSelectedHash,
+        wordHighlightEndHash,
+        wordHighlightColorHash,
+        savedHighlightsHash,
         tenRecHash,
         recitationsRevisionHash,
         overrideHash);
@@ -184,6 +204,45 @@ class _QpcV4RichTextLineState extends State<QpcV4RichTextLine> {
     final allBookmarksList =
         widget.bookmarks.values.expand((list) => list).toList();
     final ayahBookmarkedSet = widget.ayahBookmarked.toSet();
+    final savedWordHighlightCharRanges = <_ColoredTextRange>[];
+    // Ayahs bookmarked via word highlights — suppress their full-ayah background.
+    final wordHighlightAyahUqs =
+        WordInfoCtrl.instance.wordHighlightBookmarkedAyahUqs;
+
+    // Word-char mapping populated during span building — captured by onWordSlide.
+    final wordCharRanges = <_WordCharRange>[];
+
+    // End callback: fires when the finger lifts after a long-press selection.
+    // Signals WordInfoCtrl that a selection is ready for color picking.
+    void onWordSelectionEnd(Offset globalPos) {
+      WordInfoCtrl.instance.notifyWordSelectionComplete(); // unawaited — fire-and-forget
+    }
+
+    // Slide callback: hit-test the RenderParagraph to find the word under pointer.
+    void onWordSlide(Offset globalPos) {
+      final ro = _richTextKey.currentContext?.findRenderObject();
+      RenderParagraph? para;
+      if (ro is RenderParagraph) {
+        para = ro;
+      } else if (ro is RenderProxyBox && ro.child is RenderParagraph) {
+        para = ro.child as RenderParagraph;
+      }
+      if (para == null) return;
+      final localPos = para.globalToLocal(globalPos);
+      final offset = para.getPositionForOffset(localPos).offset;
+      for (final range in wordCharRanges) {
+        if (offset >= range.start && offset < range.end) {
+          WordInfoCtrl.instance.extendWordHighlight(range.ref);
+          return;
+        }
+      }
+    }
+
+    // Track char offsets for both ends of the word-highlight range.
+    int? hlStartCharStart;
+    int? hlStartCharEnd;
+    int? hlEndCharStart;
+    int? hlEndCharEnd;
 
     final spans =
         List<InlineSpan>.generate(widget.segments.length, (segmentIndex) {
@@ -214,6 +273,8 @@ class _QpcV4RichTextLineState extends State<QpcV4RichTextLine> {
         showAyahNumber: seg.isAyahEnd,
         wordRef: ref,
         isWordKhilaf: hasKhilaf,
+        onWordSlide: wordInfoCtrl.isWordSelectionEnabled ? onWordSlide : null,
+        onWordSelectionEnd: wordInfoCtrl.isWordSelectionEnabled ? onWordSelectionEnd : null,
         onLongPressStart: (details) {
           final ayahModel = widget.quranCtrl.getAyahByUq(uq);
 
@@ -280,12 +341,22 @@ class _QpcV4RichTextLineState extends State<QpcV4RichTextLine> {
       final spanStart = charOffset;
       charOffset += _countCharsInSpan(span);
 
-      // تتبع نطاق الكلمة المحددة
+      // Register glyph-only char range for hit-testing (excludes ayah-number chars).
+      wordCharRanges.add(_WordCharRange(
+        start: spanStart,
+        end: spanStart + seg.glyphs.length,
+        ref: ref,
+      ));
+
+      // Track char offsets for word-highlight range (start and end refs).
       if (wordInfoCtrl.selectedWordRef.value == ref) {
-        wordSelectionRange = TextSelection(
-          baseOffset: spanStart,
-          extentOffset: charOffset,
-        );
+        hlStartCharStart = spanStart;
+        hlStartCharEnd = charOffset;
+      }
+      final endRef = wordInfoCtrl.wordHighlightEndRef.value;
+      if (endRef != null && endRef != wordInfoCtrl.selectedWordRef.value && endRef == ref) {
+        hlEndCharStart = spanStart;
+        hlEndCharEnd = charOffset;
       }
 
       if (isSelectedCombined) {
@@ -302,10 +373,27 @@ class _QpcV4RichTextLineState extends State<QpcV4RichTextLine> {
         }
       }
 
+      // Saved word highlights (persistent, per word)
+      final savedColor = wordInfoCtrl.getSavedHighlightColor(ref);
+      if (savedColor != null) {
+        final wordRange = TextSelection(
+          baseOffset: spanStart,
+          extentOffset: spanStart + seg.glyphs.length,
+        );
+        savedWordHighlightCharRanges.add(
+          _ColoredTextRange(
+            range: wordRange,
+            color: savedColor.withValues(alpha: 0.5),
+          ),
+        );
+      }
+
       // تتبع نطاقات العلامات المرجعية (bookmarks)
-      final isBookmarked = widget.isAyahBookmarked != null
-          ? widget.isAyahBookmarked!(widget.quranCtrl.getAyahByUq(uq))
-          : (ayahBookmarkedSet.contains(uq) || bookmarksSet.contains(uq));
+      // Skip full-ayah background for ayahs bookmarked only via word highlights.
+      final isBookmarked = !wordHighlightAyahUqs.contains(uq) &&
+          (widget.isAyahBookmarked != null
+              ? widget.isAyahBookmarked!(widget.quranCtrl.getAyahByUq(uq))
+              : (ayahBookmarkedSet.contains(uq) || bookmarksSet.contains(uq)));
       if (isBookmarked) {
         final ayah = widget.quranCtrl.getAyahByUq(uq);
         Color bmColor;
@@ -353,7 +441,18 @@ class _QpcV4RichTextLineState extends State<QpcV4RichTextLine> {
       return span;
     });
 
+    // Compute word-highlight selection range from tracked offsets.
+    if (hlStartCharStart != null) {
+      final rangeStart = math.min(hlStartCharStart!, hlEndCharStart ?? hlStartCharStart!);
+      final rangeEnd = math.max(hlStartCharEnd!, hlEndCharEnd ?? hlStartCharEnd!);
+      wordSelectionRange = TextSelection(
+        baseOffset: rangeStart,
+        extentOffset: rangeEnd,
+      );
+    }
+
     final richText = RichText(
+      key: _richTextKey,
       textDirection: TextDirection.rtl,
       textAlign: widget.isCentered ? TextAlign.center : TextAlign.justify,
       softWrap: true,
@@ -365,8 +464,9 @@ class _QpcV4RichTextLineState extends State<QpcV4RichTextLine> {
     final hasSelection = ayahCharRanges.isNotEmpty;
     final hasBookmarks = bookmarkCharRanges.isNotEmpty;
     final hasWordSelection = wordSelectionRange != null;
+    final hasSavedWordHighlights = savedWordHighlightCharRanges.isNotEmpty;
 
-    if (!hasSelection && !hasBookmarks && !hasWordSelection) {
+    if (!hasSelection && !hasBookmarks && !hasWordSelection && !hasSavedWordHighlights) {
       return richText;
     }
 
@@ -375,7 +475,9 @@ class _QpcV4RichTextLineState extends State<QpcV4RichTextLine> {
       selectionColor: widget.ayahSelectedBackgroundColor ??
           const Color(0xffCDAD80).withValues(alpha: 0.25),
       bookmarkRanges: bookmarkCharRanges.values.toList(),
+      savedWordHighlightRanges: savedWordHighlightCharRanges,
       wordSelectionRange: wordSelectionRange,
+      wordSelectionColor: WordInfoCtrl.instance.wordHighlightColor.value,
       child: richText,
     );
   }
@@ -410,13 +512,17 @@ class _AyahSelectionWidget extends SingleChildRenderObjectWidget {
   final List<TextSelection> selectedRanges;
   final Color selectionColor;
   final List<_ColoredTextRange> bookmarkRanges;
+  final List<_ColoredTextRange> savedWordHighlightRanges;
   final TextSelection? wordSelectionRange;
+  final Color wordSelectionColor;
 
   const _AyahSelectionWidget({
     required this.selectedRanges,
     required this.selectionColor,
     this.bookmarkRanges = const [],
+    this.savedWordHighlightRanges = const [],
     this.wordSelectionRange,
+    this.wordSelectionColor = const Color(0xffCDAD80),
     required super.child,
   });
 
@@ -426,7 +532,9 @@ class _AyahSelectionWidget extends SingleChildRenderObjectWidget {
       selectedRanges: selectedRanges,
       selectionColor: selectionColor,
       bookmarkRanges: bookmarkRanges,
+      savedWordHighlightRanges: savedWordHighlightRanges,
       wordSelectionRange: wordSelectionRange,
+      wordSelectionColor: wordSelectionColor,
     );
   }
 
@@ -437,7 +545,9 @@ class _AyahSelectionWidget extends SingleChildRenderObjectWidget {
       ..selectedRanges = selectedRanges
       ..selectionColor = selectionColor
       ..bookmarkRanges = bookmarkRanges
-      ..wordSelectionRange = wordSelectionRange;
+      ..savedWordHighlightRanges = savedWordHighlightRanges
+      ..wordSelectionRange = wordSelectionRange
+      ..wordSelectionColor = wordSelectionColor;
   }
 }
 
@@ -448,14 +558,28 @@ class _AyahSelectionRenderBox extends RenderProxyBox {
     required List<TextSelection> selectedRanges,
     required Color selectionColor,
     List<_ColoredTextRange> bookmarkRanges = const [],
+    List<_ColoredTextRange> savedWordHighlightRanges = const [],
     TextSelection? wordSelectionRange,
+    Color wordSelectionColor = const Color(0xffCDAD80),
   })  : _selectedRanges = selectedRanges,
         _selectionColor = selectionColor,
         _bookmarkRanges = bookmarkRanges,
-        _wordSelectionRange = wordSelectionRange;
+        _savedWordHighlightRanges = savedWordHighlightRanges,
+        _wordSelectionRange = wordSelectionRange,
+        _wordSelectionColor = wordSelectionColor;
 
-  static const _wordSelectionColor =
-      Color(0xffCDAD80); // بدون alpha — يُطبّق عند الرسم
+  Color _wordSelectionColor;
+  set wordSelectionColor(Color value) {
+    if (_wordSelectionColor == value) return;
+    _wordSelectionColor = value;
+    markNeedsPaint();
+  }
+
+  List<_ColoredTextRange> _savedWordHighlightRanges;
+  set savedWordHighlightRanges(List<_ColoredTextRange> value) {
+    _savedWordHighlightRanges = value;
+    markNeedsPaint();
+  }
 
   List<TextSelection> _selectedRanges;
   set selectedRanges(List<TextSelection> value) {
@@ -491,10 +615,14 @@ class _AyahSelectionRenderBox extends RenderProxyBox {
       if (_bookmarkRanges.isNotEmpty) {
         _paintColoredRanges(context, offset, _bookmarkRanges);
       }
-      // 2) تحديد الكلمة
+      // 2) تمييزات الكلمات المحفوظة (فوق العلامات المرجعية)
+      if (_savedWordHighlightRanges.isNotEmpty) {
+        _paintColoredRanges(context, offset, _savedWordHighlightRanges);
+      }
+      // 3) تحديد الكلمة المؤقت
       if (_wordSelectionRange != null) {
         final paint = Paint()
-          ..color = _wordSelectionColor.withValues(alpha: 0.25);
+          ..color = _wordSelectionColor.withValues(alpha: 0.5);
         _paintMergedBoxes(
           child! as RenderParagraph,
           context,
@@ -518,13 +646,67 @@ class _AyahSelectionRenderBox extends RenderProxyBox {
     _paintMergedBoxes(paragraph, context, offset, _selectedRanges, bgPaint);
   }
 
-  /// رسم خلفيات العلامات المرجعية - كل نطاق بلونه الخاص.
+  /// رسم خلفيات العلامات المرجعية - يدمج كل الكلمات بنفس اللون في مستطيل واحد لكل سطر.
   void _paintColoredRanges(
       PaintingContext context, Offset offset, List<_ColoredTextRange> ranges) {
+    if (ranges.isEmpty) return;
     final paragraph = child! as RenderParagraph;
+    const padding = EdgeInsets.only(right: 4, top: 0, bottom: -6);
+    const lineTolerance = 2.0;
+
+    // Group all boxes by color so words of the same highlight merge into one rect.
+    final byColor = <int, List<TextBox>>{};
     for (final cr in ranges) {
-      final paint = Paint()..color = cr.color;
-      _paintMergedBoxes(paragraph, context, offset, [cr.range], paint);
+      final boxes = paragraph.getBoxesForSelection(
+        cr.range,
+        boxHeightStyle: BoxHeightStyle.max,
+      );
+      final key = cr.color.toARGB32();
+      (byColor[key] ??= []).addAll(boxes);
+    }
+
+    for (final entry in byColor.entries) {
+      final paint = Paint()..color = Color(entry.key);
+      final allBoxes = entry.value;
+      if (allBoxes.isEmpty) continue;
+
+      // Sort by line (top), then by horizontal position.
+      allBoxes.sort((a, b) {
+        final dy = a.toRect().top.compareTo(b.toRect().top);
+        return dy != 0 ? dy : a.toRect().left.compareTo(b.toRect().left);
+      });
+
+      // Merge boxes on the same line into one wide rect.
+      final mergedRects = <Rect>[];
+      Rect? current;
+      double? currentTop;
+      for (final box in allBoxes) {
+        final rect = box.toRect();
+        if (current == null) {
+          current = rect;
+          currentTop = rect.top;
+        } else if ((rect.top - currentTop!).abs() < lineTolerance) {
+          current = Rect.fromLTRB(
+            math.min(current.left, rect.left),
+            math.min(current.top, rect.top),
+            math.max(current.right, rect.right),
+            math.max(current.bottom, rect.bottom),
+          );
+        } else {
+          mergedRects.add(current);
+          current = rect;
+          currentTop = rect.top;
+        }
+      }
+      if (current != null) mergedRects.add(current);
+
+      for (final rect in mergedRects) {
+        final padded = padding.inflateRect(rect).shift(offset);
+        context.canvas.drawRRect(
+          RRect.fromRectAndRadius(padded, const Radius.circular(16)),
+          paint,
+        );
+      }
     }
   }
 

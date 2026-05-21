@@ -13,6 +13,8 @@ TextSpan _qpcV4SpanSegment({
   required String glyphs,
   required bool showAyahNumber,
   _LongPressStartDetailsFunction? onLongPressStart,
+  void Function(Offset globalPosition)? onWordSlide,
+  void Function(Offset globalPosition)? onWordSelectionEnd,
   required Color? textColor,
   required Color? ayahIconColor,
   required List<int> bookmarksAyahs,
@@ -112,27 +114,45 @@ TextSpan _qpcV4SpanSegment({
         onLongPressStart?.call(details);
       };
   } else {
+    // Word selection enabled: long hold highlights word(s) for slide-selection;
+    // ayah actions are reached via long press on the ayah number instead.
     recognizer = TapLongPressRecognizer(
       shortHoldDuration: const Duration(milliseconds: 150),
       longHoldDuration: const Duration(milliseconds: 500),
     )
-      ..onQuickTapCallback = onPagePress
-      ..onShortHoldStartCallback = () {
-        wordInfoCtrl.setSelectedWord(wordRef);
+      ..onQuickTapCallback = () {
+        // Clear active word selection on tap-away; otherwise do the normal page press.
+        if (wordInfoCtrl.selectedWordRef.value != null) {
+          wordInfoCtrl.clearWordHighlight();
+        } else {
+          onPagePress?.call();
+        }
       }
-      ..onShortHoldCompleteCallback = () {
-        () async {
-          if (!context.mounted) return;
-          await showWordInfoBottomSheet(
-              context: context, ref: wordRef, isDark: isDark);
-          if (!context.mounted) return;
-          wordInfoCtrl.clearSelectedWord();
-        }();
-      }
+      ..onShortHoldStartCallback = wordInfoCtrl.isWordInfoEnabled
+          ? () {
+              wordInfoCtrl.setSelectedWord(wordRef);
+            }
+          : null
+      ..onShortHoldCompleteCallback = wordInfoCtrl.isWordInfoEnabled
+          ? () {
+              () async {
+                if (!context.mounted) return;
+                await showWordInfoBottomSheet(
+                    context: context, ref: wordRef, isDark: isDark);
+                if (!context.mounted) return;
+                wordInfoCtrl.clearSelectedWord();
+              }();
+            }
+          : null
       ..onLongHoldStartCallback = (details) {
-        wordInfoCtrl.clearSelectedWord();
-        onLongPressStart?.call(details);
-      };
+        wordInfoCtrl.startWordHighlight(
+          wordRef,
+          globalPosition: details.globalPosition,
+          ayah: ayahModel,
+        );
+      }
+      ..onLongHoldMoveCallback = onWordSlide
+      ..onLongHoldEndCallback = onWordSelectionEnd;
   }
 
   return TextSpan(

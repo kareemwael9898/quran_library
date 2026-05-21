@@ -252,6 +252,30 @@ class QuranLibrary {
     jumpToPage(hizb == 1 ? 0 : page);
   }
 
+  /// Jumps to the start of a specific rub' (quarter) within a juz.
+  /// [juz] is 1..30, [rubInJuz] is 1..8.
+  void jumpToRub(int juz, int rubInJuz) {
+    final globalQuarter = (juz - 1) * 8 + rubInJuz;
+    final page = quranCtrl.getHizbStartPage(globalQuarter).page;
+    jumpToPage((juz == 1 && rubInJuz == 1) ? 0 : page);
+  }
+
+  /// Returns the start page of a given rub' within a juz. [juz] 1..30, [rubInJuz] 1..8.
+  int getRubStartPage(int juz, int rubInJuz) {
+    final globalQuarter = (juz - 1) * 8 + rubInJuz;
+    if (juz == 1 && rubInJuz == 1) return 1;
+    return quranCtrl.getHizbStartPage(globalQuarter).page;
+  }
+
+  /// Returns the global rub' index (1..240) for the given page number.
+  int getRubIndexForPage(int page) {
+    for (int i = 240; i >= 1; i--) {
+      final start = quranCtrl.getHizbStartPage(i).page;
+      if (page >= start) return i;
+    }
+    return 1;
+  }
+
   /// [jumpToBookmark] يتيح لك التنقل إلى علامة مرجعية معينة.
   /// ملاحظة: يجب أن يكون رقم صفحة العلامة المرجعية بين 1 و604.
   ///

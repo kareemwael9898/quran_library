@@ -67,12 +67,14 @@ class QuranLibraryScreen extends StatelessWidget {
     this.topBottomQuranStyle,
     this.isShowTabBar = true,
     this.enableWordSelection = true,
+    this.enableWordInfo = true,
     this.displayModeBarStyle,
     this.ayahTafsirInlineStyle,
     this.quranTafsirSideStyle,
     this.wordInfoBottomSheetStyle,
     this.isShowDisplayModeBar = true,
     this.autoScrollStyle,
+    this.customWordMenuItems = const [],
   });
 
   /// إذا قمت بإضافة شريط التطبيقات هنا فإنه سيحل محل شريط التطبيقات الافتراضية [appBar]
@@ -328,6 +330,11 @@ class QuranLibraryScreen extends StatelessWidget {
   /// [enableWordSelection] Enable or disable word selection and word info bottom sheet on tap
   final bool enableWordSelection;
 
+  /// تفعيل أو تعطيل نافذة معلومات الكلمة عند الضغط القصير فقط (مستقل عن تحديد الكلمة).
+  ///
+  /// [enableWordInfo] Enable or disable the word info bottom sheet on short press, independently of word selection.
+  final bool enableWordInfo;
+
   /// نمط تخصيص شريط اختيار وضع العرض
   ///
   /// [displayModeBarStyle] Style customization for the display mode selector bar
@@ -358,6 +365,11 @@ class QuranLibraryScreen extends StatelessWidget {
   /// [isShowDisplayModeBar] To specify whether to show the display mode bar or not
   final bool? isShowDisplayModeBar;
 
+  /// عناصر قائمة مخصصة تظهر في نافذة الكلمة عند الضغط المطوّل (مثل "إنشاء بطاقة")
+  ///
+  /// [customWordMenuItems] Custom menu items shown in the word action tooltip on long press
+  final List<Widget> customWordMenuItems;
+
   @override
   Widget build(BuildContext context) {
     // تحديث رابط أيقونة التطبيق إذا تم تمريره / Update app icon URL if provided
@@ -383,6 +395,7 @@ class QuranLibraryScreen extends StatelessWidget {
       QuranCtrl.instance.state.currentPageNumber.value = pageIndex + 1;
     }
     WordInfoCtrl.instance.isWordSelectionEnabled = enableWordSelection;
+    WordInfoCtrl.instance.isWordInfoEnabled = enableWordInfo;
     return PopScope(
       onPopInvokedWithResult: (b, _) async {
         QuranCtrl.instance.state.isShowMenu.value = false;
@@ -455,7 +468,9 @@ class QuranLibraryScreen extends StatelessWidget {
                 return Scaffold(
                   backgroundColor:
                       backgroundColor ?? AppColors.getBackgroundColor(isDark),
-                  body: SafeArea(
+                  body: Stack(
+                    children: [
+                    SafeArea(
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
@@ -675,6 +690,13 @@ class QuranLibraryScreen extends StatelessWidget {
                         ),
                       ],
                     ),
+                  ),
+                    _WordTooltipOverlay(
+                      isDark: isDark,
+                      parentContext: parentContext,
+                      customWordMenuItems: customWordMenuItems,
+                    ),
+                    ],
                   ),
                 );
               },

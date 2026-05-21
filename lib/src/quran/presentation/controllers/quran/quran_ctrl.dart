@@ -12,6 +12,9 @@ class QuranCtrl extends GetxController {
   // تحميل بيانات المصحف (V1/V3) مرة واحدة عند الحاجة (خصوصاً بعد hot restart)
   Future<void>? _coreDataLoadFuture;
 
+  // --- QPC v4 Hafs word-by-word (plain Arabic text per word) ---
+  QpcHafsWordByWordStore? _hafsWbwStore;
+
   // --- QPC v4 (الخط المحمّل) ---
   QpcV4AssetsStore? _qpcV4Store;
   Future<void>? _qpcV4LoadFuture;
@@ -1016,5 +1019,45 @@ class QuranCtrl extends GetxController {
       return KeyEventResult.handled;
     }
     return KeyEventResult.ignored;
+  }
+
+  /// Returns the number of words in [ayah] of [surah].
+  /// Probes the hafs store until textFor returns null.
+  Future<int> getAyahWordCount(int surah, int ayah) async {
+    _hafsWbwStore ??= await QpcHafsWordByWordAssetsLoader.load();
+    final store = _hafsWbwStore!;
+    var count = 0;
+    while (store.textFor(surah: surah, ayah: ayah, word: count + 1) != null) {
+      count++;
+    }
+    return count;
+  }
+
+  /// Returns the Arabic text of the words in the highlight range [start]→[end].
+  /// Words are joined with a space in reading order.
+  /// Loads the Hafs word-by-word data on first call (fast — cached afterwards).
+  Future<String> getHighlightedWordsText(WordRef start, WordRef end) async {
+    _hafsWbwStore ??= await QpcHafsWordByWordAssetsLoader.load();
+    final store = _hafsWbwStore!;
+
+    final surah = start.surahNumber;
+    final minAyah = math.min(start.ayahNumber, end.ayahNumber);
+    final maxAyah = math.max(start.ayahNumber, end.ayahNumber);
+    final startWord = (minAyah == start.ayahNumber) ? start.wordNumber : end.wordNumber;
+    final endWord = (maxAyah == end.ayahNumber) ? end.wordNumber : start.wordNumber;
+    final minWord = (minAyah == maxAyah) ? math.min(startWord, endWord) : startWord;
+    final maxWord = (minAyah == maxAyah) ? math.max(startWord, endWord) : endWord;
+
+    final parts = <String>[];
+    for (var a = minAyah; a <= maxAyah; a++) {
+      final wFrom = (a == minAyah) ? minWord : 1;
+      final wTo = (a == maxAyah) ? maxWord : 999;
+      for (var w = wFrom; w <= wTo; w++) {
+        final text = store.textFor(surah: surah, ayah: a, word: w);
+        if (text == null) break;
+        parts.add(text);
+      }
+    }
+    return parts.join(' ');
   }
 }
